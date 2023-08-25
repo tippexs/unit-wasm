@@ -34,6 +34,11 @@ support and the C examples.
 
 ## Quickstart in Developing Rust WebAssembly Modules for Unit
 
+### Prerequisites
+
+We are shiping our C-Library within our `unit-wasm` crate. To be able to build your application you need to provide a link
+to the wasi-sysroot files. To do that, download the latest version of the wasi-sysroot from theire [github repoistory](https://github.com/WebAssembly/wasi-sdk/releases) and extract the files.
+
 1) Have a suitable rust/wasm environment setup, See
 [Building the Rust libunit-wasm Crate and Examples](#building-the-rust-libunit-wasm-crate-and-examples) for some details
 
@@ -77,7 +82,7 @@ $ wget -O src/lib.rs https://raw.githubusercontent.com/nginx/unit-wasm/master/ex
 6) Built it!
 
 ```
-$ cargo build --target wasm32-wasi
+$ WASI_SYSROOT=/path/to/wasi-sysroot cargo build --target wasm32-wasi
 ```
 
 You should now have a *target/wasm32-wasi/debug/my_wasm_example.wasm* file
@@ -179,8 +184,8 @@ Try the make command again...
 
 ### Building the Rust libunit-wasm Crate and Examples
 
-To build the rust stuff you will of course need rust and also cargo and the
-rust wasm/wasi stuff. On Fedora this is the relevant packages I have installed
+To build the Rust crates locally you will of course need rust and also cargo and the
+rust wasm/wasi library. On Fedora this is the relevant packages I have installed
 
 ```
 cargo
@@ -190,7 +195,7 @@ rust-std-static-wasm32-unknown-unknown
 rust-std-static-wasm32-wasi
 ```
 
-Install with $PKGMGR.
+To install Rust you can follow the official Rust [documentation](https://www.rust-lang.org/tools/install).
 
 If you have also completed the above building of the C library and examples
 you should now be good to go.
