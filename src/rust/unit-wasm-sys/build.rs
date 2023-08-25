@@ -27,25 +27,7 @@ fn main() {
 
 fn generate_bindings() {
     
-    //refactor this: Make sure the environment variable exists.
-    // YES. Not vendoring! We are not going to donwload the tar-ball from the bytecodealliance
-    // github
-    //
-    // NO. Download the `wasi-sysroot` from the btas github repo, unpack it into OUT_DIR and make
-    // use of it.
-    
-
-    // Check if we have a WASI_SYSROOT env set.
-    let wasi_env = env::var("WASI_SYSROOT").is_ok();
-    // Declare wasi_sysroot
-    let wasi_sysroot;
-    
-    // If wasi_env is `true` get the sysroot from the ENV-Var. Do not Download it.
-    if wasi_env {
-      wasi_sysroot = "--sysroot=".to_owned() + &env::var("WASI_SYSROOT").unwrap(); 
-    } else {
-      wasi_sysroot = "--sysroot=".to_owned() + &env::var("WASI_SYSROOT").unwrap(); 
-    }
+    let wasi_sysroot = "--sysroot=".to_owned() + &env::var("WASI_SYSROOT").expect("WASI_SYSROOT is not defined!");
 
     //build the libunit-wasm
     let mut cfg = cc::Build::new();
