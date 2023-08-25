@@ -1,15 +1,12 @@
 // buildscript for the unit-wasm-sys crate.
 
 use std::env;
-use std::path::{Path, PathBuf};
+use std::path::{PathBuf};
 
 fn main() {
     // Tell rustc where to find the libunit-wasm library.
-    let libunit_wasm_dir = "libunit-wasm";
-
-    let dir = env::var("CARGO_MANIFEST_DIR").unwrap();
-
-    // Some generics
+    let dst = env::var("OUT_DIR").unwrap();
+    // Sosme generics
     println!("cargo:rerun-if-changed=build.rs");
     println!("cargo:rerun-if-changed=wrapper.h");
 
@@ -17,21 +14,54 @@ fn main() {
     // compiler to add a directory to the library search plugin. The
     // `native` keyword means "only looking for `native libraries` in
     // this directory".
-    println!(
-        "cargo:rustc-link-search=native={}",
-        Path::new(&dir).join(libunit_wasm_dir).display()
-    );
 
     // The rustc-link-lib tells Cargo to link the given library using
     // the compiler's `-l` flag. This is needed to start building our
     // FFIs.
-    println!("cargo:rustc-link-lib=static=unit-wasm");
-
+    
     generate_bindings();
+    
+    
+    println!("cargo:rustc-link-search=native={}", &dst);
 }
 
 fn generate_bindings() {
-    let wasi_sysroot = "--sysroot=".to_owned() + &env::var("WASI_SYSROOT").unwrap();
+    
+    //refactor this: Make sure the environment variable exists.
+    // YES. Not vendoring! We are not going to donwload the tar-ball from the bytecodealliance
+    // github
+    //
+    // NO. Download the `wasi-sysroot` from the btas github repo, unpack it into OUT_DIR and make
+    // use of it.
+    
+
+    // Check if we have a WASI_SYSROOT env set.
+    let wasi_env = env::var("WASI_SYSROOT").is_ok();
+    // Declare wasi_sysroot
+    let wasi_sysroot;
+    
+    // If wasi_env is `true` get the sysroot from the ENV-Var. Do not Download it.
+    if wasi_env {
+      wasi_sysroot = "--sysroot=".to_owned() + &env::var("WASI_SYSROOT").unwrap(); 
+    } else {
+      wasi_sysroot = "--sysroot=".to_owned() + &env::var("WASI_SYSROOT").unwrap(); 
+    }
+
+    //build the libunit-wasm
+    let mut cfg = cc::Build::new();
+    
+    // Use `cfg` CC::Builder to build the libunit-wasm.c. 
+    // This step is important to have the static libs to build the Rust bindings
+    
+    cfg
+        .file("libunit-wasm/libunit-wasm.c")
+        .include("libunit-wasm/include")
+        .flag(&wasi_sysroot)
+        .flag("-fno-strict-aliasing")
+        .warnings(false)
+        .compile("libunit-wasm");
+
+
     let bindings = bindgen::Builder::default()
         // The input header file.
         .header("libunit-wasm/include/unit/unit-wasm.h")
@@ -44,6 +74,7 @@ fn generate_bindings() {
 
     let out_dir_env =
         env::var("OUT_DIR").expect("The required environment variable OUT_DIR was not set");
+   
     let out_path = PathBuf::from(out_dir_env);
 
     bindings
