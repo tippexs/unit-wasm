@@ -8,5 +8,9 @@ edition = "2021"
 [dependencies]
 unit-wasm = { path = "../../../src/rust", version = "0.1.0-beta" }
 
+
+[env]
+WASI_SYSROOT = "/home/timo/unit1.31/wasi-sysroot/"
+
 [lib]
 crate-type = ["cdylib"]
